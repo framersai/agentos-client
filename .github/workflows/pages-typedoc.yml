@@ -2,7 +2,7 @@ name: Build and deploy Typedoc to GitHub Pages
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ master ]
 
 permissions:
   contents: read

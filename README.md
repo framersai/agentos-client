@@ -1,3 +1,11 @@
+<!-- BRANDING-LOGOS -->
+<p align="center">
+  <a href="https://agentos.sh"><img src="public/logos/agentos-primary-no-tagline.svg" alt="AgentOS" height="64" /></a>
+</p>
+<p align="center">
+  <a href="https://frame.dev"><img src="public/logos/frame-wordmark.svg" alt="Frame" height="28" /></a>
+</p>
+
 # AgentOS Client Workbench
 
 React + Vite dashboard for inspecting AgentOS sessions locally. The goal is to give builders a zero-config cockpit that mirrors how Frame.dev debugs adaptive agents.
