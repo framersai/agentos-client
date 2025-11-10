@@ -684,8 +684,21 @@ export default function App() {
               </button>
             )}
             <a href="https://agentos.sh" target="_blank" rel="noreferrer" className="group flex items-center gap-2">
-            <img src="/logos/agentos-primary-no-tagline.svg" alt="AgentOS" className="block h-10 w-auto transition-transform group-hover:scale-105 dark:hidden" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display='none')} />
-            <img src="/logos/agentos-primary-no-tagline.svg" alt="AgentOS" className="hidden h-10 w-auto transition-transform group-hover:scale-105 dark:block" style={{ filter: 'brightness(0) invert(1)' }} onError={(e) => ((e.currentTarget as HTMLImageElement).style.display='none')} />
+              <img src="/agentos-icon.svg" alt="AgentOS" className="h-7 w-7" />
+              <span className="flex items-baseline gap-1 text-[20px] font-semibold leading-none text-slate-800 dark:text-slate-100">
+                Agent
+                <span
+                  className="leading-none"
+                  style={{
+                    background: 'linear-gradient(135deg, #6366F1, #8B5CF6, #EC4899)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}
+                >
+                  OS
+                </span>
+              </span>
             </a>
           </div>
           <nav className="flex items-center gap-4">
