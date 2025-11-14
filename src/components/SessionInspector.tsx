@@ -290,7 +290,7 @@ function StreamingText({ text, isActive }: { text: string; isActive: boolean }) 
   }
 
   return (
-    <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-slate-900 dark:prose-headings:text-slate-100 prose-p:text-slate-800 dark:prose-p:text-slate-200 prose-li:text-slate-800 dark:prose-li:text-slate-200 prose-strong:text-slate-900 dark:prose-strong:text-slate-100 prose-code:text-slate-800 dark:prose-code:text-slate-200 prose-pre:bg-slate-900 dark:prose-pre:bg-slate-950 prose-pre:text-slate-100">
+    <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-slate-900 dark:prose-headings:text-slate-100 prose-p:text-slate-800 dark:prose-p:text-slate-200 prose-li:text-slate-800 dark:prose-li:text-slate-200 prose-strong:text-slate-900 dark:prose-strong:text-slate-100 prose-code:text-slate-800 dark:prose-code:text-slate-200 prose-pre:bg-slate-100 prose-pre:text-slate-800 dark:prose-pre:bg-slate-950 dark:prose-pre:text-slate-100">
       <ReactMarkdown>{displayed}</ReactMarkdown>
       {showCursor && <span className="ml-0.5 inline-block h-4 w-1 animate-pulse bg-sky-500" aria-hidden="true" />}
     </div>
@@ -386,8 +386,8 @@ type SimpleRow = {
 };
 
 function buildAggregatedRows(events: Array<{ id: string; timestamp: number; type: AgentOSChunkType | "log"; payload: AgentOSResponse | { message: string; level?: string } }>): Array<AggregatedAssistantRow | SimpleRow> {
-  // Work chronologically to aggregate, then we'll render newest-first as before
-  const chronological = [...events].reverse();
+  // Events are stored oldest → newest already; iterate in that order for correct streaming aggregation
+  const chronological = [...events];
   const rows: Array<AggregatedAssistantRow | SimpleRow> = [];
   const byStream: Record<string, AggregatedAssistantRow> = {};
 
@@ -526,11 +526,11 @@ function buildAggregatedRows(events: Array<{ id: string; timestamp: number; type
     rows.push(row);
   }
 
-  // Render newest first (descending by timestamp/updatedAt)
+  // Render newest first so fresh activity bubbles to the top of the timeline
   rows.sort((a, b) => {
     const ta = a.kind === "assistant" ? a.updatedAt : a.timestamp;
     const tb = b.kind === "assistant" ? b.updatedAt : b.timestamp;
-    return ta - tb;
+    return tb - ta;
   });
 
   return rows;

@@ -62,6 +62,19 @@ type StreamOptions = {
   agencyRequest?: AgencyRequestPayload;
 };
 
+// Filters for listing personas from backend
+export type ListPersonaFilters = {
+  capability?: string | string[];
+  tier?: string | string[];
+  search?: string;
+};
+
+/**
+ * Thin client wrapper for calling the AgentOS-enabled backend from the workbench UI.
+ * - Resolves base URL from `VITE_API_URL` or current origin (dev defaults to `http://localhost:3001` from Vite).
+ * - Provides helpers for streaming chat, listing personas/workflows/models, and extension/tool operations.
+ * @public
+ */
 class AgentOSClient {
   private baseUrl: string;
 
@@ -74,6 +87,15 @@ class AgentOSClient {
 
   // ... existing methods ...
 
+	/**
+	 * Send a single-turn chat message (non-streaming) to the AgentOS backend.
+	 * @param personaId Persona or mode identifier.
+	 * @param message User input string.
+	 * @param sessionId Optional conversation/session id (auto-generated if omitted).
+	 * @param includeTools Whether to enable tool execution (backend-dependent).
+	 * @param includeGuardrails Whether to enable guardrails (backend-dependent).
+	 * @returns Raw fetch Response for callers that need headers/status.
+	 */
   async sendMessage(
     personaId: string,
     message: string,
@@ -103,6 +125,17 @@ class AgentOSClient {
     return response;
   }
 
+	/**
+	 * Open a Server-Sent Events (SSE) stream for a single user message.
+	 * Parses SSE lines into {@link AgentOSResponse} chunks and forwards them to handlers.
+	 * @param personaId Selected persona/mode id used by the backend stream router.
+	 * @param message User input string to send.
+	 * @param sessionId Optional conversation id to correlate turns.
+	 * @param onChunk Handler for parsed AgentOS chunks.
+	 * @param onComplete Called when the stream ends.
+	 * @param onError Called on network or parsing errors.
+	 * @param opts Optional model, workflowRequest, and agencyRequest.
+	 */
   async streamMessage(
     personaId: string,
     message: string,
@@ -188,8 +221,27 @@ class AgentOSClient {
     }
   }
 
-  async listPersonas(): Promise<PersonaDefinition[]> {
-    const response = await fetch(`${this.baseUrl}/api/agentos/personas?userId=agentos-workbench-user`);
+	/**
+	 * Fetch personas available to the workbench, optionally filtered server-side.
+	 * @returns Array of {@link PersonaDefinition}.
+	 */
+  async listPersonas(params?: { userId?: string; filters?: ListPersonaFilters; signal?: AbortSignal }): Promise<PersonaDefinition[]> {
+    const search = new URLSearchParams();
+    const userId = params?.userId ?? 'agentos-workbench-user';
+    search.set('userId', userId);
+    const filters = params?.filters;
+    if (filters?.capability) {
+      const caps = Array.isArray(filters.capability) ? filters.capability : [filters.capability];
+      for (const cap of caps) search.append('capability', cap);
+    }
+    if (filters?.tier) {
+      const tiers = Array.isArray(filters.tier) ? filters.tier : [filters.tier];
+      for (const t of tiers) search.append('tier', t);
+    }
+    if (filters?.search) {
+      search.set('search', filters.search);
+    }
+    const response = await fetch(`${this.baseUrl}/api/agentos/personas?${search.toString()}`, { signal: params?.signal });
     if (!response.ok) {
       throw new Error('Failed to fetch personas');
     }
@@ -198,6 +250,10 @@ class AgentOSClient {
     return (Array.isArray(data) ? data : (data.personas || [])) as PersonaDefinition[];
   }
 
+	/**
+	 * Fetch workflow definitions from the backend.
+	 * @returns Array of {@link WorkflowDefinition}.
+	 */
   async listWorkflows(): Promise<WorkflowDefinition[]> {
     const response = await fetch(`${this.baseUrl}/api/agentos/workflows/definitions`);
     if (!response.ok) {
@@ -213,6 +269,11 @@ class AgentOSClient {
     return this.listWorkflows();
   }
 
+	/**
+	 * Execute an agency by id with arbitrary input (non-streaming).
+	 * @param agencyId Target agency id.
+	 * @param input Arbitrary JSON input payload.
+	 */
   async executeAgency(
     agencyId: string,
     input: unknown
@@ -238,6 +299,7 @@ class AgentOSClient {
 
   // New Extension Methods
 
+	/** List extensions from backend registry. */
   async getExtensions(): Promise<Extension[]> {
     const response = await fetch(`${this.baseUrl}/api/agentos/extensions`);
     if (!response.ok) {
@@ -248,6 +310,7 @@ class AgentOSClient {
     return Array.isArray(data) ? data : [];
   }
 
+	/** List tools derived from installed/available extensions. */
   async getAvailableTools(): Promise<Tool[]> {
     const response = await fetch(`${this.baseUrl}/api/agentos/extensions/tools`);
     if (!response.ok) {
@@ -258,6 +321,10 @@ class AgentOSClient {
     return Array.isArray(data) ? data : [];
   }
 
+	/**
+	 * Request extension installation by package name.
+	 * Note: server currently invalidates cache only (placeholder).
+	 */
   async installExtension(packageName: string): Promise<void> {
     const response = await fetch(`${this.baseUrl}/api/agentos/extensions/install`, {
       method: 'POST',
@@ -272,6 +339,10 @@ class AgentOSClient {
     }
   }
 
+	/**
+	 * Execute a tool by id with arbitrary input.
+	 * Returns tool-specific output object.
+	 */
   async executeTool(toolId: string, input: unknown): Promise<unknown> {
     const response = await fetch(`${this.baseUrl}/api/agentos/tools/execute`, {
       method: 'POST',
@@ -292,6 +363,7 @@ class AgentOSClient {
     return response.json();
   }
 
+	/** Start an example agency workflow; responses are non-streaming. */
   async startAgencyWorkflow(input: unknown): Promise<unknown> {
     const response = await fetch(`${this.baseUrl}/api/agentos/agency/workflow/start`, {
       method: 'POST',
@@ -313,12 +385,14 @@ class AgentOSClient {
   }
 
   // Diagnostics
+	/** Get backend LLM provider status snapshot. */
   async getLlmStatus(): Promise<Record<string, unknown>> {
     const response = await fetch(`${this.baseUrl}/api/system/llm-status`);
     if (!response.ok) throw new Error('Failed to fetch LLM status');
     return response.json();
   }
 
+	/** List available models with pricing metadata (if configured). */
   async getAvailableModels(): Promise<AgentOSModelInfo[]> {
     const response = await fetch(`${this.baseUrl}/api/agentos/models`);
     if (!response.ok) throw new Error('Failed to fetch models');
@@ -328,6 +402,10 @@ class AgentOSClient {
   }
 
   // Open a streaming connection to AgentOS
+	/**
+	 * Open an AgentOS stream and return a cleanup function.
+	 * Wraps {@link streamMessage} and allows cancellation in the future.
+	 */
   openAgentOSStream(
     params: {
       sessionId: string;
@@ -366,6 +444,14 @@ class AgentOSClient {
   // WebSocket methods are not currently used - app uses SSE instead
   // If WebSocket support is needed in the future, add socket.io-client back
   // and use dynamic imports to avoid Node.js module issues
+
+	/** Fetch curated/community guardrails from backend registry. */
+	async getGuardrails(): Promise<GuardrailDescriptor[]> {
+		const response = await fetch(`${this.baseUrl}/api/agentos/guardrails`);
+		if (!response.ok) throw new Error('Failed to fetch guardrails');
+		const data = await response.json();
+		return Array.isArray(data) ? (data as GuardrailDescriptor[]) : [];
+	}
 }
 
 export const agentosClient = new AgentOSClient();
@@ -388,3 +474,50 @@ export const executeTool = agentosClient.executeTool.bind(agentosClient);
 export const startAgencyWorkflow = agentosClient.startAgencyWorkflow.bind(agentosClient);
 export const getLlmStatus = agentosClient.getLlmStatus.bind(agentosClient);
 export const getAvailableModels = agentosClient.getAvailableModels.bind(agentosClient);
+
+// Guardrails
+// Guardrails
+export interface GuardrailDescriptor {
+	id: string;
+	package: string;
+	version: string;
+	displayName: string;
+	description?: string;
+	category?: 'safety' | 'privacy' | 'budget' | 'compliance' | 'quality' | 'custom';
+	verified?: boolean;
+	capabilities?: string[];
+	repository?: string;
+}
+
+/**
+ * List agency executions for a user
+ */
+export async function listAgencyExecutions(userId: string, limit?: number): Promise<any[]> {
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3333';
+  const params = new URLSearchParams({ userId });
+  if (limit) {
+    params.set('limit', String(limit));
+  }
+  const response = await fetch(`${baseUrl}/api/agentos/agency/executions?${params}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch agency executions: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data.executions ?? [];
+}
+
+/**
+ * Get a specific agency execution with all seats
+ */
+export async function getAgencyExecution(agencyId: string): Promise<{ execution: any; seats: any[] } | null> {
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3333';
+  const response = await fetch(`${baseUrl}/api/agentos/agency/executions/${agencyId}`);
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null;
+    }
+    throw new Error(`Failed to fetch agency execution: ${response.statusText}`);
+  }
+  return await response.json();
+}
+

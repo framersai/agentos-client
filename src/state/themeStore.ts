@@ -40,7 +40,17 @@ const applyAppearance = (appearance: Appearance) => {
 
 const applyPalette = (palette: Palette) => {
   const root = document.documentElement;
-  root.classList.remove('palette-default', 'palette-sakura', 'palette-sunset');
+  root.classList.remove(
+    'palette-default',
+    'palette-sakura',
+    'palette-sunset',
+    'palette-twilight',
+    'palette-aurora',
+    'palette-warm',
+    'palette-terminus-amber',
+    'palette-terminus-green',
+    'palette-terminus-white'
+  );
   root.classList.add(`palette-${palette}`);
 };
 

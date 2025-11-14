@@ -15,14 +15,14 @@ const researchAndPublish: WorkflowDefinition = {
       roleId: "signals_researcher",
       displayName: "Signals Researcher",
       description: "Scans the landscape for recent updates tied to the active goal.",
-      personaId: "voice_assistant_persona",
+      personaId: "v_researcher",
       metadata: { cadence: "continuous" }
     },
     {
       roleId: "publishing_editor",
       displayName: "Publishing Editor",
       description: "Shapes the findings into a succinct update for stakeholders.",
-      personaId: "voice_assistant_persona",
+      personaId: "v_researcher",
       metadata: { style: "executive_summary" }
     }
   ],
@@ -65,14 +65,14 @@ const monitorAndAlert: WorkflowDefinition = {
       roleId: "observer",
       displayName: "Observer",
       description: "Reviews incoming signals and scores their relevance.",
-      personaId: "voice_assistant_persona",
+      personaId: "v_researcher",
       metadata: { cadence: "hourly" }
     },
     {
       roleId: "notifier",
       displayName: "Notifier",
       description: "Drafts the alert that would be sent to stakeholders.",
-      personaId: "voice_assistant_persona",
+      personaId: "v_researcher",
       metadata: { channel: "slack" }
     }
   ],

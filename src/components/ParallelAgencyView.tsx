@@ -176,33 +176,24 @@ export const ParallelAgencyView: React.FC = () => {
     }
   };
 
-  const updateTaskStatus = (taskId: string, status: WorkflowTask['status']) => {
-    setWorkflowTasks(tasks => tasks.map(t => 
-      t.id === taskId ? { ...t, status } : t
-    ));
+  const updateTaskStatus = (taskId: string | undefined, status: WorkflowTask['status']) => {
+    if (!taskId) return;
+    setWorkflowTasks(tasks => tasks.map(t => (t.id === taskId ? { ...t, status } : t)));
   };
 
-  const updateAgentStatus = (agentId: string, status: AgentState['status'], task?: string) => {
-    setAgents(agents => agents.map(a => 
-      a.id === agentId ? { ...a, status, currentTask: task } : a
-    ));
+  const updateAgentStatus = (agentId: string | undefined, status: AgentState['status'], task?: string) => {
+    if (!agentId) return;
+    setAgents(agents => agents.map(a => (a.id === agentId ? { ...a, status, currentTask: task } : a)));
   };
 
-  const updateAgentProgress = (agentId: string, progress: number) => {
-    setAgents(agents => agents.map(a => 
-      a.id === agentId ? { ...a, progress } : a
-    ));
+  const updateAgentProgress = (agentId: string | undefined, progress: number | undefined) => {
+    if (!agentId || typeof progress !== 'number') return;
+    setAgents(agents => agents.map(a => (a.id === agentId ? { ...a, progress } : a)));
   };
 
-  const addAgentMessage = (agentId: string, type: 'thought' | 'action' | 'result', content: string) => {
-    setAgents(agents => agents.map(a => 
-      a.id === agentId 
-        ? { 
-            ...a, 
-            messages: [...a.messages, { type, content, timestamp: new Date() }].slice(-5)
-          }
-        : a
-    ));
+  const addAgentMessage = (agentId: string | undefined, type: 'thought' | 'action' | 'result', content: string | undefined) => {
+    if (!agentId || typeof content !== 'string') return;
+    setAgents(agents => agents.map(a => (a.id === agentId ? { ...a, messages: [...a.messages, { type, content, timestamp: new Date() }].slice(-5) } : a)));
   };
 
   const getTaskIcon = (status: WorkflowTask['status']) => {

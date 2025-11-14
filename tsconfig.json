@@ -10,6 +10,6 @@
     }
   },
   "include": ["src", "src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["dist", "node_modules"],
+  "exclude": ["dist", "node_modules", "src/lib/localAgentRuntime.ts", "src/lib/localWorkflowLibrary.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

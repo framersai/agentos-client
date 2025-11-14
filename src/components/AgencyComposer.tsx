@@ -33,6 +33,7 @@ interface AgencyComposerProps {
     outputFormat?: 'json' | 'csv' | 'markdown' | 'text';
   }) => void;
   disabled?: boolean;
+  isSubmitting?: boolean;
 }
 
 /** Example markdown agency inputs with increasing complexity */
@@ -60,7 +61,7 @@ const MARKDOWN_EXAMPLES = [
 [Reporter] Write summary with insights in markdown`
 ];
 
-export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerProps) {
+export function AgencyComposer({ onSubmit, disabled = false, isSubmitting = false }: AgencyComposerProps) {
   const [mode, setMode] = useState<'structured' | 'markdown'>('markdown');
   const [goal, setGoal] = useState('Multi-agent coordination');
   const [roles, setRoles] = useState<AgentRoleConfig[]>([]);
@@ -100,6 +101,8 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
     setCurrentExample(next);
     setMarkdownInput(MARKDOWN_EXAMPLES[next]);
   };
+
+  const formDisabled = disabled || isSubmitting;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +157,8 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
           <button
             type="button"
             onClick={() => setMode(mode === 'structured' ? 'markdown' : 'structured')}
-            className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300"
+            disabled={formDisabled}
+            className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 disabled:opacity-50"
           >
             {mode === 'structured' ? <Code className="h-3 w-3" /> : <Hash className="h-3 w-3" />}
             {mode === 'structured' ? 'Switch to Markdown' : 'Switch to Structured'}
@@ -162,14 +166,15 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
         </div>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" aria-busy={isSubmitting}>
         {/* Shared goal field */}
         <label className="block space-y-1">
           <span className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Agency Goal</span>
           <input
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
+            disabled={formDisabled}
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100 disabled:opacity-60"
             placeholder="Coordinate parallel analysis and synthesis"
           />
         </label>
@@ -184,7 +189,8 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
               <button
                 type="button"
                 onClick={rotateExample}
-                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[9px] font-semibold uppercase tracking-wider text-amber-700 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+                disabled={formDisabled}
+                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[9px] font-semibold uppercase tracking-wider text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
               >
                 <Sparkles className="h-3 w-3" />
                 Next Example ({currentExample + 1}/{MARKDOWN_EXAMPLES.length})
@@ -194,7 +200,8 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
               value={markdownInput}
               onChange={(e) => setMarkdownInput(e.target.value)}
               rows={8}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm text-slate-900 focus:border-sky-500 focus:outline-none dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
+              disabled={formDisabled}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm text-slate-900 focus:border-sky-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
               placeholder="[Researcher] List sorting algorithms with O(n)&#10;[Coder] Implement quicksort in TypeScript&#10;[Tester] Write test cases"
             />
             <p className="text-xs text-slate-500 dark:text-slate-500">
@@ -211,7 +218,8 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
               <button
                 type="button"
                 onClick={addRole}
-                className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-300 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/20 dark:text-slate-300"
+                disabled={formDisabled}
+                className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-300 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/20 dark:text-slate-300"
               >
                 <Plus className="h-3 w-3" />
                 Add Role
@@ -236,7 +244,8 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
                       <button
                         type="button"
                         onClick={() => removeRole(role.id)}
-                        className="rounded-full border border-slate-200 p-1 text-slate-600 hover:bg-slate-100 dark:border-white/10 dark:text-slate-400"
+                        disabled={formDisabled}
+                        className="rounded-full border border-slate-200 p-1 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:text-slate-400"
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -246,12 +255,14 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
                         value={role.roleId}
                         onChange={(e) => updateRole(role.id, 'roleId', e.target.value)}
                         placeholder="researcher"
-                        className="rounded border border-slate-200 bg-white px-2 py-1 text-xs dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
+                        disabled={formDisabled}
+                        className="rounded border border-slate-200 bg-white px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
                       />
                       <select
                         value={role.personaId}
                         onChange={(e) => updateRole(role.id, 'personaId', e.target.value)}
-                        className="rounded border border-slate-200 bg-white px-2 py-1 text-xs dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
+                        disabled={formDisabled}
+                        className="rounded border border-slate-200 bg-white px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
                       >
                         {personas.map((p) => (
                           <option key={p.id} value={p.id}>
@@ -265,7 +276,8 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
                       onChange={(e) => updateRole(role.id, 'instruction', e.target.value)}
                       rows={2}
                       placeholder="Specific task for this agent..."
-                      className="mt-2 w-full rounded border border-slate-200 bg-white px-2 py-1 text-xs dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
+                      disabled={formDisabled}
+                      className="mt-2 w-full rounded border border-slate-200 bg-white px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
                     />
                   </div>
                 ))}
@@ -282,7 +294,8 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
           <select
             value={outputFormat}
             onChange={(e) => setOutputFormat(e.target.value as 'json' | 'csv' | 'markdown' | 'text')}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
+            disabled={formDisabled}
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
           >
             <option value="markdown">Markdown (default)</option>
             <option value="json">JSON</option>
@@ -296,12 +309,17 @@ export function AgencyComposer({ onSubmit, disabled = false }: AgencyComposerPro
 
         <button
           type="submit"
-          disabled={disabled || (mode === 'markdown' ? !markdownInput.trim() : roles.length === 0)}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 disabled:opacity-50"
+          disabled={formDisabled || (mode === 'markdown' ? !markdownInput.trim() : roles.length === 0)}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Users className="h-4 w-4" />
-          Start Agency Workflow
+          {isSubmitting ? 'Coordinating…' : 'Start Agency Workflow'}
         </button>
+        {isSubmitting && (
+          <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+            Coordinating seats and streaming updates…
+          </p>
+        )}
       </form>
     </div>
   );

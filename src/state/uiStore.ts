@@ -1,12 +1,17 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { idbStorage } from '@/utils/idbStorage';
+import { sqlStateStorage } from '@/lib/sqlStateStorage';
+
+type LeftPanelKey = 'compose' | 'personas' | 'agency' | 'workflows';
 
 interface UiState {
   welcomeTourDismissed: boolean;
   welcomeTourSnoozeUntil: number | null;
   dismissWelcomeTour: () => void;
   snoozeWelcomeTour: (hours?: number) => void;
+  preferredLeftPanel: LeftPanelKey;
+  setPreferredLeftPanel: (panel: LeftPanelKey) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -14,10 +19,12 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       welcomeTourDismissed: false,
       welcomeTourSnoozeUntil: null,
+      preferredLeftPanel: 'personas',
       dismissWelcomeTour: () => set({ welcomeTourDismissed: true, welcomeTourSnoozeUntil: null }),
       snoozeWelcomeTour: (hours = 24) => set({ welcomeTourSnoozeUntil: Date.now() + hours * 60 * 60 * 1000 }),
+      setPreferredLeftPanel: (panel) => set({ preferredLeftPanel: panel }),
     }),
-    { name: 'agentos-client-ui', storage: createJSONStorage(() => idbStorage as Storage) }
+    { name: 'agentos-client-ui', storage: createJSONStorage(() => (typeof window !== 'undefined' ? idbStorage : sqlStateStorage)) }
   )
 );
 

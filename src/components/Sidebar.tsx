@@ -13,9 +13,9 @@ interface SidebarProps {
 }
 
 const statusBadgeStyles: Record<string, string> = {
-  idle: "bg-slate-200 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200",
-  streaming: "bg-emerald-100 text-emerald-700 border border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30",
-  error: "bg-rose-100 text-rose-700 border border-rose-300 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30"
+  idle: "border theme-border theme-bg-secondary theme-text-secondary",
+  streaming: "theme-bg-success theme-text-on-accent border border-transparent",
+  error: "theme-bg-error theme-text-on-accent border border-transparent"
 };
 
 export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: SidebarProps) {
@@ -31,7 +31,6 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
 
   const preferDefaultPersona = useCallback((ids: string[]): string | undefined => {
     if (ids.includes('v_researcher')) return 'v_researcher';
-    if (ids.includes('nerf_generalist')) return 'nerf_generalist';
     return ids[0];
   }, []);
   const remotePersonaIds = useMemo(() => personas.filter(p => p.source === 'remote').map(p => p.id), [personas]);
@@ -119,22 +118,22 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
 
   return (
     <nav 
-      className="flex h-full flex-col border-r border-slate-200 bg-slate-50 text-[0.93rem] transition-colors dark:border-white/5 dark:bg-slate-950/60"
+      className="flex h-full flex-col border-r theme-border theme-bg-primary text-[0.93rem] transition-theme"
       aria-label={t("sidebar.labels.navigation", { defaultValue: "Session navigation" })}
     >
       {/* Header with branding and controls */}
-      <header className="flex flex-shrink-0 flex-col gap-3 border-b border-slate-200 px-5 py-4 dark:border-white/5">
+      <header className="flex flex-shrink-0 flex-col gap-3 border-b theme-border px-5 py-4">
         <div className="flex items-center gap-1">
-          <span className="whitespace-nowrap text-[5px] font-medium uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500">WORKBENCH</span>
+          <span className="whitespace-nowrap text-[5px] font-medium uppercase tracking-[0.1em] theme-text-muted">WORKBENCH</span>
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.35em] text-sky-600 dark:text-sky-400">Agent Sessions</p>
+            <p className="text-[10px] uppercase tracking-[0.35em] theme-accent">Agent Sessions</p>
             <h1 className="sr-only">{t("sidebar.title")}</h1>
           </div>
           <button
             onClick={openNew}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5 hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-slate-950"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full theme-bg-accent theme-text-on-accent shadow-lg shadow-[rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             title={t("sidebar.actions.newSession")}
             aria-label={t("sidebar.actions.newSession")}
           >
@@ -144,7 +143,7 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="ml-2 rounded-full border border-slate-200 px-2 py-1 text-[10px] text-slate-600 transition hover:-translate-y-0.5 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300"
+              className="ml-2 rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-2 py-1 text-[10px] theme-text-secondary transition hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               title="Hide sidebar"
               aria-label="Hide sidebar"
             >
@@ -155,12 +154,37 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
         
         {/* Quick links (Settings/About) and actions (Tour/Theme/Import) */}
         <div className="mt-2 flex flex-wrap items-center gap-2" role="navigation" aria-label="Quick links">
-          <button onClick={() => window.dispatchEvent(new CustomEvent('agentos:open-settings'))} className={clsx('rounded-full border px-3 py-1 text-[10px] transition', 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300')}>Settings</button>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('agentos:open-about'))} className={clsx('rounded-full border px-3 py-1 text-[10px] transition', 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300')}>About</button>
-          <span className="mx-1 h-4 w-px bg-slate-200 dark:bg-white/10" aria-hidden="true" />
-          <button onClick={() => window.dispatchEvent(new CustomEvent('agentos:toggle-tour'))} className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[10px] text-amber-800 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">Tour</button>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('agentos:toggle-theme-panel'))} className="rounded-full border border-slate-200 px-3 py-1 text-[10px] text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-200">Theme</button>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('agentos:open-import'))} className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[10px] text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">Import</button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('agentos:open-settings'))}
+            className="rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-3 py-1 text-[10px] theme-text-secondary transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Settings
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('agentos:open-about'))}
+            className="rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-3 py-1 text-[10px] theme-text-secondary transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            About
+          </button>
+          <span className="mx-1 h-4 w-px bg-[color:var(--color-border-primary)]" aria-hidden="true" />
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('agentos:toggle-tour'))}
+            className="rounded-full px-3 py-1 text-[10px] theme-bg-warning transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Tour
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('agentos:toggle-theme-panel'))}
+            className="rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-3 py-1 text-[10px] theme-text-secondary transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Theme
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('agentos:open-import'))}
+            className="rounded-full px-3 py-1 text-[10px] theme-bg-success transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Import
+          </button>
         </div>
 
         {/* Language Control */}
@@ -176,13 +200,43 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
         aria-label={t("sidebar.labels.sessionList", { defaultValue: "Active sessions" })}
       >
         <div className="mb-2 flex items-center gap-2 text-xs">
-          <button onClick={() => handleFilterChange('all')} className={clsx('rounded-full border px-2 py-0.5', filter === 'all' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 text-slate-600 dark:border-white/10 dark:text-slate-300')}>All</button>
-          <button onClick={() => handleFilterChange('persona')} className={clsx('rounded-full border px-2 py-0.5', filter === 'persona' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 text-slate-600 dark:border-white/10 dark:text-slate-300')}>Persona</button>
-          <button onClick={() => handleFilterChange('agency')} className={clsx('rounded-full border px-2 py-0.5', filter === 'agency' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 text-slate-600 dark:border-white/10 dark:text-slate-300')}>Agency</button>
+          <button
+            onClick={() => handleFilterChange('all')}
+            className={clsx(
+              'rounded-full border px-2 py-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              filter === 'all'
+                ? 'theme-bg-accent theme-text-on-accent border-transparent shadow-sm'
+                : 'theme-text-secondary theme-bg-secondary theme-border hover:opacity-95'
+            )}
+          >
+            All
+          </button>
+          <button
+            onClick={() => handleFilterChange('persona')}
+            className={clsx(
+              'rounded-full border px-2 py-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              filter === 'persona'
+                ? 'theme-bg-accent theme-text-on-accent border-transparent shadow-sm'
+                : 'theme-text-secondary theme-bg-secondary theme-border hover:opacity-95'
+            )}
+          >
+            Persona
+          </button>
+          <button
+            onClick={() => handleFilterChange('agency')}
+            className={clsx(
+              'rounded-full border px-2 py-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              filter === 'agency'
+                ? 'theme-bg-accent theme-text-on-accent border-transparent shadow-sm'
+                : 'theme-text-secondary theme-bg-secondary theme-border hover:opacity-95'
+            )}
+          >
+            Agency
+          </button>
         </div>
         {sortedSessions.length === 0 ? (
           <div 
-            className="rounded-xl border border-slate-200 bg-slate-100 p-4 text-sm text-slate-600 dark:border-white/5 dark:bg-slate-900/60 dark:text-slate-400"
+            className="rounded-xl border theme-border theme-bg-secondary-soft p-4 text-sm theme-text-secondary transition-theme"
             role="status"
           >
             {t("sidebar.emptyState")}
@@ -195,11 +249,11 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
             
             const targetBadge =
               session.targetType === "agency" ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-300">
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.4em] theme-accent">
                   <Users className="h-3 w-3" aria-hidden="true" /> {t("sidebar.badges.agency")}
                 </span>
               ) : (
-                <span className="text-[10px] font-semibold uppercase tracking-[0.4em] text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.4em] theme-text-muted">
                   {t("sidebar.badges.persona")}
                 </span>
               );
@@ -209,11 +263,10 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
                 key={session.id}
                 onClick={() => setActiveSession(session.id)}
                 className={clsx(
-                  "flex w-full flex-col gap-2 rounded-xl border px-4 py-3 text-left transition",
-                  "focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-slate-950",
+                  "flex w-full flex-col gap-2 rounded-2xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
                   isActive 
-                    ? "border-sky-500 bg-sky-50 ring-2 ring-sky-500/60 dark:border-sky-500/60 dark:bg-slate-800" 
-                    : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-white/5 dark:bg-slate-900/40 dark:hover:border-white/10 dark:hover:bg-slate-900/60"
+                    ? "theme-bg-secondary-soft border theme-border-strong shadow-lg" 
+                    : "border theme-border theme-bg-secondary hover:opacity-95"
                 )}
                 role="listitem"
                 aria-label={t("sidebar.session.ariaLabel", { 
@@ -225,8 +278,8 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
               >
                 {/* Status Badge */}
                 <div className="flex items-center justify-between text-xs">
-                  <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                    <Radio className="h-3 w-3 text-sky-500 dark:text-sky-400" aria-hidden="true" />
+                    <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest theme-text-muted">
+                      <Radio className="h-3 w-3 theme-accent" aria-hidden="true" />
                     <span className="sr-only">{t("sidebar.session.streamLabel")}</span>
                   </span>
                   <span 
@@ -244,12 +297,12 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
                 {/* Session Info */}
                 <div>
                   <div className="flex items-center justify-between">
-                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                    <p className="text-base font-semibold theme-text-primary">
                       {session.displayName}
                     </p>
                     {targetBadge}
                   </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                  <p className="text-xs theme-text-secondary">
                     {session.events.length === 0
                       ? t("sidebar.session.noActivity")
                       : new Date(session.events[0]!.timestamp).toLocaleTimeString()}
@@ -258,7 +311,7 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
                 
                 {/* Completion Indicator */}
                 {session.events.find((event) => event.type === AgentOSChunkType.FINAL_RESPONSE) && (
-                  <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-300">
+                  <div className="flex items-center gap-2 text-xs theme-accent">
                     <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
                     <span>{t("sidebar.session.completedTurn")}</span>
                   </div>
@@ -269,13 +322,13 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
         )}
       </div>
       {showNew && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md card-panel--strong p-5 shadow-xl transition-theme">
             <header className="mb-3">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">New session</h3>
+              <h3 className="text-sm font-semibold theme-text-primary">New session</h3>
             </header>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-3">
+            <div className="space-y-3 text-sm theme-text-secondary">
+              <div className="flex items-center gap-3 text-sm">
                 <label className="inline-flex items-center gap-2">
                   <input
                     type="radio"
@@ -297,37 +350,37 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
                     }}
                     disabled={!agencyOptionsAvailable}
                   />
-                  <span className={!agencyOptionsAvailable ? "text-slate-400" : undefined}>Agency</span>
+                  <span className={!agencyOptionsAvailable ? "theme-text-muted" : undefined}>Agency</span>
                 </label>
               </div>
               {newType === 'persona' ? (
                 <label className="block">
-                  <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Persona</span>
+                  <span className="mb-1 block text-xs theme-text-muted">Persona</span>
                   {personaOptionsAvailable ? (
                     <select
                       value={newPersonaId}
                       onChange={(e)=>setNewPersonaId(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-900"
+                      className="w-full rounded-lg border theme-border bg-[color:var(--color-background-secondary)] px-3 py-2 text-sm theme-text-primary"
                     >
                       {[...personas].map(p => (
                         <option key={p.id} value={p.id}>{p.displayName}</option>
                       ))}
                     </select>
                   ) : (
-                    <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+                    <p className="rounded-lg border theme-border bg-[color:var(--color-background-secondary)] px-3 py-2 text-xs theme-text-secondary">
                       No personas available. Create or import one from the Personas tab.
                     </p>
                   )}
                 </label>
               ) : (
                 <label className="block">
-                  <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Agency</span>
+                  <span className="mb-1 block text-xs theme-text-muted">Agency</span>
                   {agencyOptionsAvailable ? (
                     <div className="space-y-2">
                       <select
                         value={newAgencyId}
                         onChange={(e)=>setNewAgencyId(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-900"
+                        className="w-full rounded-lg border theme-border bg-[color:var(--color-background-secondary)] px-3 py-2 text-sm theme-text-primary"
                       >
                         {[...agencies].map(a => (
                           <option key={a.id} value={a.id}>{a.name}</option>
@@ -339,14 +392,14 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
                           setShowNew(false);
                           window.dispatchEvent(new CustomEvent('agentos:open-agency-wizard'));
                         }}
-                        className="inline-flex items-center gap-2 text-xs text-slate-500 underline decoration-dotted hover:text-slate-700 dark:text-slate-300"
+                        className="inline-flex items-center gap-2 text-xs theme-text-secondary underline decoration-dotted hover:theme-accent"
                       >
                         <Sparkles className="h-3.5 w-3.5 text-sky-500" />
                         Launch agency wizard
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+                    <div className="space-y-2 rounded-lg border theme-border bg-[color:var(--color-background-secondary)] px-3 py-2 text-xs theme-text-secondary">
                       <p>No agencies have been defined yet.</p>
                       <button
                         type="button"
@@ -354,7 +407,7 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
                           onNavigate?.('agency');
                           setShowNew(false);
                         }}
-                        className="rounded-full bg-amber-600 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-500"
+                        className="rounded-full px-3 py-1 text-xs font-semibold theme-bg-warning hover:opacity-95"
                       >
                         Open Agency Manager
                       </button>
@@ -364,7 +417,7 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
                           setShowNew(false);
                           window.dispatchEvent(new CustomEvent('agentos:open-agency-wizard'));
                         }}
-                        className="rounded-full bg-sky-500 px-3 py-1 text-xs font-semibold text-white hover:bg-sky-400"
+                        className="rounded-full px-3 py-1 text-xs font-semibold theme-bg-accent hover:opacity-95"
                       >
                         Launch Wizard
                       </button>
@@ -373,20 +426,29 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
                 </label>
               )}
               <label className="block">
-                <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Name (optional)</span>
-                <input value={newName} onChange={(e)=>setNewName(e.target.value)} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-900" />
+                <span className="mb-1 block text-xs theme-text-muted">Name (optional)</span>
+                <input
+                  value={newName}
+                  onChange={(e)=>setNewName(e.target.value)}
+                  className="w-full rounded-lg border theme-border bg-[color:var(--color-background-secondary)] px-3 py-2 text-sm theme-text-primary"
+                />
               </label>
             </div>
             <div className="mt-4 flex justify-end gap-2">
-              <button onClick={()=>setShowNew(false)} className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300">Cancel</button>
+              <button
+                onClick={()=>setShowNew(false)}
+                className="rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-3 py-1 text-xs theme-text-secondary transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Cancel
+              </button>
               <button
                 onClick={createNew}
                 disabled={!canCreateSession}
                 className={clsx(
-                  "rounded-full px-3 py-1 text-xs font-semibold",
+                  "rounded-full px-3 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
                   canCreateSession
-                    ? "bg-sky-500 text-white hover:bg-sky-400"
-                    : "cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-500"
+                    ? "theme-bg-accent theme-text-on-accent hover:opacity-95"
+                    : "cursor-not-allowed border theme-border theme-bg-secondary theme-text-muted"
                 )}
               >
                 Create
@@ -396,13 +458,13 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
         </div>
       )}
       {/* Footer links */}
-      <footer className="mt-auto border-t border-slate-200 px-5 py-3 text-xs text-slate-600 dark:border-white/5 dark:text-slate-400">
+      <footer className="mt-auto border-t theme-border px-5 py-3 text-xs theme-text-secondary transition-theme">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <a
             href="https://vca.chat"
             target="_blank"
             rel="noreferrer"
-            className="group inline-flex items-center gap-2 rounded-lg px-2 py-1 text-sky-600 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-sky-50 hover:text-sky-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:text-sky-300 dark:hover:bg-slate-900/50 dark:focus-visible:ring-offset-slate-950"
+            className="group inline-flex items-center gap-2 rounded-lg px-2 py-1 theme-accent transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             <Store className="h-4 w-4 transition-transform group-hover:scale-110" aria-hidden="true" />
             <span className="uppercase tracking-[0.35em]">Marketplace</span>
@@ -412,7 +474,7 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
               href="https://agentos.sh"
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex items-center gap-1 rounded-md px-2 py-1 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:hover:bg-slate-900/50 dark:focus-visible:ring-offset-slate-950"
+              className="group inline-flex items-center gap-1 rounded-md px-2 py-1 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
               <Globe className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">agentos.sh</span>
@@ -421,7 +483,7 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
               href="https://frame.dev"
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex items-center gap-1 rounded-md px-2 py-1 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:hover:bg-slate-900/50 dark:focus-visible:ring-offset-slate-950"
+              className="group inline-flex items-center gap-1 rounded-md px-2 py-1 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
               <Users className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">frame.dev</span>
@@ -430,7 +492,7 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
               href="https://github.com/framersai/agentos"
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex items-center gap-1 rounded-md px-2 py-1 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:hover:bg-slate-900/50 dark:focus-visible:ring-offset-slate-950"
+              className="group inline-flex items-center gap-1 rounded-md px-2 py-1 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
               <Github className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">GitHub</span>
@@ -440,7 +502,7 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
               target="_blank"
               rel="noreferrer"
               aria-label="Star AgentOS on GitHub"
-              className="group inline-flex items-center rounded-full p-1 pr-2 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-yellow-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500 focus-visible:ring-offset-2 dark:hover:bg-yellow-950/30 dark:focus-visible:ring-offset-slate-950"
+              className="group inline-flex items-center rounded-full p-1 pr-2 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
               <Star className="h-4 w-4 text-yellow-500 transition-transform group-active:scale-90" aria-hidden="true" />
             </a>
@@ -449,7 +511,7 @@ export function Sidebar({ onCreateSession, onToggleCollapse, onNavigate }: Sideb
               target="_blank"
               rel="noreferrer"
               aria-label="Fork AgentOS on GitHub"
-              className="group inline-flex items-center rounded-full p-1 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:hover:bg-slate-900/50 dark:focus-visible:ring-offset-slate-950"
+              className="group inline-flex items-center rounded-full p-1 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
               <GitFork className="h-4 w-4 transition-transform group-active:scale-90" aria-hidden="true" />
             </a>

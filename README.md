@@ -1,4 +1,16 @@
+<div align="center">
+
 # AgentOS Client Workbench
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../logos/agentos-primary-no-tagline-dark-2x.png">
+  <source media="(prefers-color-scheme: light)" srcset="../../logos/agentos-primary-no-tagline-light-2x.png">
+  <img src="../../logos/agentos-primary-no-tagline-transparent-2x.png" alt="AgentOS" width="260">
+</picture>
+
+### An AgentOS product by <a href="https://frame.dev">Frame.dev</a>
+
+</div>
 
 React + Vite dashboard for inspecting AgentOS sessions locally. The goal is to give builders a zero-config cockpit that mirrors how Frame.dev debugs adaptive agents.
 
@@ -84,3 +96,12 @@ See `docs/BACKEND_API.md` for complete request/response shapes and examples.
 - GitHub: https://github.com/framersai/agentos
 - NPM: https://www.npmjs.com/package/@framers/agentos, https://www.npmjs.com/package/@framers/sql-storage-adapter
 
+---
+
+<p align="center">
+  <a href="https://frame.dev">
+    <img src="../../logos/frame-logo-green-transparent-4x.png" alt="Frame.dev" height="40" />
+  </a>
+  <br />
+  <sub>AgentOS product by <a href="https://frame.dev">Frame.dev</a></sub>
+</p>

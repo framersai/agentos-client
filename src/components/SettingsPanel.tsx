@@ -53,12 +53,16 @@ export function SettingsPanel() {
     setSaving(true);
     try {
       const providers: ProviderUpdatePayload = {};
-      if (form.openaiKey || form.openaiModel) providers.openai = {};
-      if (form.openaiKey) providers.openai.apiKey = form.openaiKey;
-      if (form.openaiModel) providers.openai.model = form.openaiModel;
-      if (form.anthropicKey || form.anthropicModel) providers.anthropic = {};
-      if (form.anthropicKey) providers.anthropic.apiKey = form.anthropicKey;
-      if (form.anthropicModel) providers.anthropic.model = form.anthropicModel;
+      if (form.openaiKey || form.openaiModel) {
+        providers.openai = {};
+        if (form.openaiKey) providers.openai.apiKey = form.openaiKey;
+        if (form.openaiModel) providers.openai.model = form.openaiModel;
+      }
+      if (form.anthropicKey || form.anthropicModel) {
+        providers.anthropic = {};
+        if (form.anthropicKey) providers.anthropic.apiKey = form.anthropicKey;
+        if (form.anthropicModel) providers.anthropic.model = form.anthropicModel;
+      }
 
       const limits: LimitsPayload = {};
       if (form.rpm) limits.rpm = Number(form.rpm);

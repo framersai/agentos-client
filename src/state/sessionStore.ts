@@ -1,6 +1,7 @@
 ﻿import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { idbStorage } from "@/utils/idbStorage";
+import { sqlStateStorage } from "@/lib/sqlStateStorage";
 import type {
   AgentOSAgencyUpdateChunk,
   AgentOSResponse,
@@ -129,16 +130,9 @@ const defaultPersonas: PersonaDefinition[] = [
   }
 ];
 
-const storageShim: Storage = {
-  getItem: () => null,
-  setItem: () => undefined,
-  removeItem: () => undefined,
-  clear: () => undefined,
-  key: () => null,
-  length: 0
-};
+// No-op fallback handled by sqlStateStorage for non-browser environments
 
-const persistedStorage = createJSONStorage<SessionState>(() => (typeof window !== "undefined" ? (idbStorage as Storage) : storageShim));
+const persistedStorage = createJSONStorage(() => (typeof window !== "undefined" ? idbStorage : sqlStateStorage));
 
 export const useSessionStore = create<SessionState>()(
   persist(

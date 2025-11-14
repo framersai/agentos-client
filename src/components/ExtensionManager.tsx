@@ -26,6 +26,9 @@ interface Extension {
   description: string;
   category: string;
   verified?: boolean;
+  verifiedAt?: string;
+  verifiedBy?: { name?: string; email?: string };
+  verificationChecklistVersion?: string;
   installed?: boolean;
   tools?: string[];
   author?: {
@@ -145,7 +148,7 @@ export const ExtensionManager: React.FC = () => {
               <Input
                 placeholder="Search extensions..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 icon={<Search className="w-4 h-4" />}
               />
             </div>
@@ -177,7 +180,14 @@ export const ExtensionManager: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <h3 className="font-semibold text-lg">{ext.name}</h3>
                         {ext.verified && (
-                          <Shield className="w-4 h-4 text-blue-500" title="Verified" />
+                          <Badge
+                            variant="success"
+                            size="xs"
+                            className="uppercase tracking-wider"
+                            title="Verified via AgentOS standards (tests, docs, security). See Admin Policy."
+                          >
+                            Verified
+                          </Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">{ext.package}</p>

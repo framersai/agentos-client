@@ -54,7 +54,7 @@ export function ImportWizard({ open, onClose }: ImportWizardProps) {
           goal: typeof a.goal === 'string' ? a.goal : undefined,
           workflowId: typeof a.workflowId === 'string' ? a.workflowId : undefined,
           participants: Array.isArray(a.participants) ? a.participants : [],
-          metadata: typeof a.metadata === 'object' && a.metadata ? a.metadata : undefined,
+          metadata: typeof a.metadata === 'object' && a.metadata ? (a.metadata as Record<string, unknown>) : undefined,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -68,14 +68,16 @@ export function ImportWizard({ open, onClose }: ImportWizardProps) {
           id: typeof event.id === "string" ? event.id : crypto.randomUUID(),
           timestamp: typeof event.timestamp === "number" ? event.timestamp : Date.now(),
           type: typeof event.type === "string" ? (event.type as SessionEvent["type"]) : "log",
-          payload: event.payload ?? { message: "Imported event" }
+          payload: (typeof event.payload === 'object' && event.payload !== null
+            ? (event.payload as SessionEvent['payload'])
+            : { message: "Imported event" })
         }));
         const session: AgentSession = {
           id: String(s.id || crypto.randomUUID()),
           targetType: s.targetType === 'agency' ? 'agency' : 'persona',
           displayName: String(s.displayName || 'Imported session'),
-          personaId: s.personaId,
-          agencyId: s.agencyId,
+          personaId: typeof s.personaId === 'string' ? s.personaId : undefined,
+          agencyId: typeof s.agencyId === 'string' ? s.agencyId : undefined,
           status: 'idle',
           events
         };

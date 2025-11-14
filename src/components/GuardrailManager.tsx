@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Shield, Plus, Trash2, Power, Settings2 } from 'lucide-react';
+import { agentosClient, type GuardrailDescriptor } from '../lib/agentosClient';
 
 export interface SerializableGuardrail {
   id: string;
@@ -33,6 +34,10 @@ const CATEGORY_COLORS: Record<string, string> = {
   custom: '#6b7280',
 };
 
+/**
+ * Guardrail management panel. Renders current guardrails and exposes an "Add" modal
+ * that fetches curated/community guardrails from the backend registry.
+ */
 export function GuardrailManager({
   personaId,
   guardrails,
@@ -41,6 +46,27 @@ export function GuardrailManager({
   onConfigure,
 }: GuardrailManagerProps) {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [available, setAvailable] = useState<GuardrailDescriptor[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!showAddModal) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const rails = await agentosClient.getGuardrails();
+        if (!cancelled) setAvailable(rails);
+      } catch {
+        if (!cancelled) setAvailable([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showAddModal]);
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-900/60">
@@ -129,11 +155,38 @@ export function GuardrailManager({
           <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-slate-900">
             <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Add Guardrail</h3>
             <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-              Browse the guardrail registry and select one to install.
+              Browse curated and community guardrails.
             </p>
-            {/* TODO: Fetch from registry.json and display */}
-            <div className="space-y-2">
-              <p className="text-xs text-slate-500">Coming soon: Browse curated and community guardrails</p>
+            <div className="space-y-2 max-h-80 overflow-auto">
+              {loading ? (
+                <p className="text-xs text-slate-500">Loading…</p>
+              ) : available.length === 0 ? (
+                <p className="text-xs text-slate-500">No guardrails found.</p>
+              ) : (
+                available.map((rail) => (
+                  <div key={rail.id} className="flex items-start justify-between rounded-lg border border-slate-200 p-3 dark:border-white/10">
+                    <div className="pr-3">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        {rail.displayName}
+                        {rail.verified ? <span className="ml-2 rounded bg-emerald-600/20 px-1.5 py-0.5 text-[10px] text-emerald-300">verified</span> : null}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{rail.description}</p>
+                      {rail.category && (
+                        <span className="mt-1 inline-block rounded-full bg-slate-200 px-2 py-0.5 text-[10px] uppercase tracking-wider text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                          {rail.category}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="rounded-full border border-sky-500 px-3 py-1 text-xs text-sky-600 hover:bg-sky-50 dark:border-sky-400 dark:text-sky-300 dark:hover:bg-sky-950"
+                      onClick={() => {/* Future: install and enable */}}
+                    >
+                      Add
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
             <div className="mt-6 flex justify-end gap-2">
               <button

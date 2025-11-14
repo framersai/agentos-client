@@ -198,7 +198,7 @@ export function exportAllData(data: unknown, format: 'json' | 'csv' | 'markdown'
       }
       break;
     case 'markdown':
-      dataExport.exportMarkdown(data, `${defaultFilename}.md`);
+      dataExport.exportMarkdown(typeof data === 'string' ? data : String(data), `${defaultFilename}.md`);
       break;
     case 'text':
       dataExport.exportText(JSON.stringify(data, null, 2), `${defaultFilename}.txt`);

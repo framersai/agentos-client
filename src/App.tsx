@@ -27,15 +27,15 @@ function TelemetryView() {
   const perSession = useTelemetryStore((s) => s.perSession);
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const m = activeSessionId ? perSession[activeSessionId] : undefined;
-  if (!m) return <p className="text-xs text-slate-600 dark:text-slate-400">No telemetry yet.</p>;
+  if (!m) return <p className="text-xs theme-text-secondary">No telemetry yet.</p>;
   return (
-    <dl className="grid grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-300">
-      <div><dt className="uppercase tracking-widest text-slate-500">Chunks</dt><dd className="font-semibold text-slate-900 dark:text-slate-100">{m.chunks ?? 0}</dd></div>
-      <div><dt className="uppercase tracking-widest text-slate-500">Chars</dt><dd className="font-semibold text-slate-900 dark:text-slate-100">{m.textDeltaChars ?? 0}</dd></div>
-      <div><dt className="uppercase tracking-widest text-slate-500">Tool calls</dt><dd className="font-semibold text-slate-900 dark:text-slate-100">{m.toolCalls ?? 0}</dd></div>
-      <div><dt className="uppercase tracking-widest text-slate-500">Errors</dt><dd className="font-semibold text-slate-900 dark:text-slate-100">{m.errors ?? 0}</dd></div>
-      <div><dt className="uppercase tracking-widest text-slate-500">Duration</dt><dd className="font-semibold text-slate-900 dark:text-slate-100">{m.durationMs ? `${Math.round(m.durationMs)}ms` : '-'}</dd></div>
-      <div><dt className="uppercase tracking-widest text-slate-500">Tokens</dt><dd className="font-semibold text-slate-900 dark:text-slate-100">{m.finalTokensTotal ?? '-'}</dd></div>
+    <dl className="grid grid-cols-2 gap-3 text-xs theme-text-secondary">
+      <div><dt className="uppercase tracking-widest theme-text-muted">Chunks</dt><dd className="font-semibold theme-text-primary">{m.chunks ?? 0}</dd></div>
+      <div><dt className="uppercase tracking-widest theme-text-muted">Chars</dt><dd className="font-semibold theme-text-primary">{m.textDeltaChars ?? 0}</dd></div>
+      <div><dt className="uppercase tracking-widest theme-text-muted">Tool calls</dt><dd className="font-semibold theme-text-primary">{m.toolCalls ?? 0}</dd></div>
+      <div><dt className="uppercase tracking-widest theme-text-muted">Errors</dt><dd className="font-semibold theme-text-primary">{m.errors ?? 0}</dd></div>
+      <div><dt className="uppercase tracking-widest theme-text-muted">Duration</dt><dd className="font-semibold theme-text-primary">{m.durationMs ? `${Math.round(m.durationMs)}ms` : '-'}</dd></div>
+      <div><dt className="uppercase tracking-widest theme-text-muted">Tokens</dt><dd className="font-semibold theme-text-primary">{m.finalTokensTotal ?? '-'}</dd></div>
     </dl>
   );
 }
@@ -63,23 +63,24 @@ function AnalyticsView({
   
   const estimateUsd = (promptTokens: number, completionTokens: number, model?: string) => {
     const modelInfo = modelData.find(m => m.id === model);
-    const pricing = modelInfo?.pricing || { inputCostPer1K: 0.0005, outputCostPer1K: 0.0015 };
-    const inputCost = (promptTokens / 1000) * pricing.inputCostPer1K;
-    const outputCost = (completionTokens / 1000) * pricing.outputCostPer1K;
+    const inputRate = modelInfo?.pricing?.inputCostPer1K ?? 0.0005;
+    const outputRate = modelInfo?.pricing?.outputCostPer1K ?? 0.0015;
+    const inputCost = (promptTokens / 1000) * inputRate;
+    const outputCost = (completionTokens / 1000) * outputRate;
     return inputCost + outputCost;
   };
   
   const cost = estimateUsd(promptTokens, completionTokens, selectedModel);
   
   return (
-    <div className="text-xs text-slate-600 dark:text-slate-400">
+    <div className="text-xs theme-text-secondary">
       <div className="mb-3 space-y-2">
         <label className="block">
-          <span className="text-[11px] uppercase tracking-widest text-slate-500">Model Override</span>
+          <span className="text-[11px] uppercase tracking-widest theme-text-muted">Model Override</span>
           <select
             value={selectedModel || ''}
             onChange={(e) => onChangeModel(e.target.value || undefined)}
-            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs dark:border-white/10 dark:bg-slate-900"
+            className="w-full rounded-md border theme-border bg-[color:var(--color-background-secondary)] px-2 py-1 text-xs theme-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <option value="">
               System default ({systemDefaultModel?.displayName || systemDefaultModel?.id || 'gpt-4o-mini'})
@@ -95,7 +96,7 @@ function AnalyticsView({
           </select>
         </label>
         {currentModelData && (
-          <div className="text-[10px] text-slate-500">
+          <div className="text-[10px] theme-text-muted">
             Provider: {currentModelData.provider} | 
             Input: ${(currentModelData.pricing?.inputCostPer1K || 0).toFixed(4)}/1K | 
             Output: ${(currentModelData.pricing?.outputCostPer1K || 0).toFixed(4)}/1K
@@ -116,7 +117,7 @@ import {
   type AgentOSWorkflowUpdateChunk
 } from "@/types/agentos";
 
-const DEFAULT_PERSONA_ID = "nerf_generalist";
+const DEFAULT_PERSONA_ID = "v_researcher";
 const DEMO_PERSONA_SESSION_ID = "demo-persona-session";
 const DEMO_AGENCY_ID = "demo-agency";
 const DEMO_AGENCY_SESSION_ID = "demo-agency-session";
@@ -129,7 +130,14 @@ export default function App() {
     { key: "workflows", label: "Workflows" }
   ] as const;
   type LeftTabKey = typeof LEFT_TABS[number]["key"];
-  const [leftTab, setLeftTab] = useState<LeftTabKey>("compose");
+  const preferredLeftPanel = useUiStore((s) => s.preferredLeftPanel) as LeftTabKey | undefined;
+  const setPreferredLeftPanel = useUiStore((s) => s.setPreferredLeftPanel);
+  const leftTab: LeftTabKey = LEFT_TABS.some((tab) => tab.key === preferredLeftPanel)
+    ? (preferredLeftPanel as LeftTabKey)
+    : "personas";
+  const setLeftTab = useCallback((key: LeftTabKey) => {
+    setPreferredLeftPanel(key);
+  }, [setPreferredLeftPanel]);
   const [showTour, setShowTour] = useState(false);
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -191,6 +199,7 @@ export default function App() {
   const activeSession = useMemo(() => {
     return activeSessionId ? sessions.find(s => s.id === activeSessionId) : undefined;
   }, [activeSessionId, sessions]);
+  const isAgencyStreaming = activeSession?.targetType === 'agency' && activeSession.status === 'streaming';
 
   const streamHandles = useRef<Record<string, () => void>>({});
   const telemetry = useTelemetryStore();
@@ -264,7 +273,6 @@ export default function App() {
 
   const preferDefaultPersona = useCallback((ids: string[]): string | undefined => {
     if (ids.includes('v_researcher')) return 'v_researcher';
-    if (ids.includes('nerf_generalist')) return 'nerf_generalist';
     return ids[0];
   }, []);
 
@@ -545,7 +553,7 @@ export default function App() {
       const agencyRequest =
         effectiveTarget === "agency" && agencyDefinition
           ? {
-              agencyId,
+              agencyId: agencyId ?? undefined,
               workflowId: workflowInstanceId ?? undefined,
               goal: agencyDefinition.goal,
               participants: (agencyDefinition.participants ?? []).map((participant) => ({
@@ -670,13 +678,13 @@ export default function App() {
     <>
       <SkipLink />
       {/* Top Header */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-slate-950/95">
+      <header className="sticky top-0 z-50 border-b theme-border theme-bg-primary-soft px-4 py-3 backdrop-blur-sm transition-theme">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {!isDesktop && (
               <button
                 type="button"
-                className="mr-1 inline-flex items-center justify-center rounded-md border border-slate-200 p-1 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-slate-900 lg:hidden"
+                className="mr-1 inline-flex items-center justify-center rounded-md border theme-border bg-[color:var(--color-background-secondary)] p-1 theme-text-primary transition-colors hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:hidden"
                 aria-label="Open sidebar"
                 onClick={() => setShowMobileSidebar(true)}
               >
@@ -685,7 +693,7 @@ export default function App() {
             )}
             <a href="https://agentos.sh" target="_blank" rel="noreferrer" className="group flex items-center gap-2">
               <img src="/agentos-icon.svg" alt="AgentOS" className="h-7 w-7" />
-              <span className="flex items-baseline gap-1 text-[20px] font-semibold leading-none text-slate-800 dark:text-slate-100">
+              <span className="flex items-baseline gap-0.5 text-[20px] font-semibold leading-none theme-text-primary">
                 Agent
                 <span
                   className="leading-none"
@@ -701,15 +709,15 @@ export default function App() {
               </span>
             </a>
           </div>
-          <nav className="flex items-center gap-4">
-            <a href="https://agentos.sh/docs" target="_blank" rel="noreferrer" className="text-xs text-slate-600 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400">Docs</a>
-            <a href="https://github.com/framersai/agentos" target="_blank" rel="noreferrer" className="text-xs text-slate-600 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400">GitHub</a>
-            <a href="https://vca.chat" target="_blank" rel="noreferrer" className="text-xs text-slate-600 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400">Marketplace</a>
+          <nav className="flex items-center gap-4 text-xs">
+            <a href="https://agentos.sh/docs" target="_blank" rel="noreferrer" className="theme-text-secondary transition-colors hover:text-[color:var(--color-accent-primary)]">Docs</a>
+            <a href="https://github.com/framersai/agentos" target="_blank" rel="noreferrer" className="theme-text-secondary transition-colors hover:text-[color:var(--color-accent-primary)]">GitHub</a>
+            <a href="https://vca.chat" target="_blank" rel="noreferrer" className="theme-text-secondary transition-colors hover:text-[color:var(--color-accent-primary)]">Marketplace</a>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setShowThemePanel(!showThemePanel)}
-                className="rounded-full border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-slate-900"
+                className="rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-2 py-1 text-xs theme-text-secondary transition-colors hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 title="Theme settings"
               >
                 Theme
@@ -721,10 +729,10 @@ export default function App() {
       </header>
       {showThemePanel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" role="dialog" aria-modal="true">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xl shadow-slate-900/30 dark:border-white/20 dark:bg-slate-900 dark:shadow-black/50">
+          <div className="card-panel--strong w-full max-w-lg p-4 shadow-2xl shadow-[rgba(15,23,42,0.2)]">
             <ThemePanel />
             <div className="mt-3 flex justify-end">
-              <button onClick={() => setShowThemePanel(false)} className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300">Close</button>
+              <button onClick={() => setShowThemePanel(false)} className="rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-3 py-1 text-xs theme-text-secondary transition-colors hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Close</button>
             </div>
           </div>
         </div>
@@ -745,15 +753,15 @@ export default function App() {
             }
           }}
         >
-          <div className="flex h-full max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/20 dark:border-white/20 dark:bg-slate-900 dark:shadow-black/50">
+          <div className="card-panel--strong flex h-full max-h-[90vh] w-full max-w-3xl flex-col shadow-2xl shadow-[rgba(15,23,42,0.2)] transition-theme">
             <div className="flex-1 overflow-y-auto p-4">
               <SettingsPanel />
             </div>
-            <div className="border-t border-slate-200 p-4 dark:border-white/10">
+            <div className="border-t theme-border p-4">
               <div className="flex justify-end">
                 <button 
                   onClick={() => setShowSettingsModal(false)} 
-                  className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300"
+                  className="rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-3 py-1 text-xs theme-text-secondary transition-colors hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   Close
                 </button>
@@ -778,15 +786,15 @@ export default function App() {
             }
           }}
         >
-          <div className="flex h-full max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/20 dark:border-white/20 dark:bg-slate-900 dark:shadow-black/50">
+          <div className="card-panel--strong flex h-full max-h-[90vh] w-full max-w-3xl flex-col shadow-2xl shadow-[rgba(15,23,42,0.2)] transition-theme">
             <div className="flex-1 overflow-y-auto p-4">
               <AboutPanel />
             </div>
-            <div className="border-t border-slate-200 p-4 dark:border-white/10">
+            <div className="border-t theme-border p-4">
               <div className="flex justify-end">
                 <button 
                   onClick={() => setShowAboutModal(false)} 
-                  className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300"
+                  className="rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-3 py-1 text-xs theme-text-secondary transition-colors hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   Close
                 </button>
@@ -795,16 +803,33 @@ export default function App() {
           </div>
         </div>
       )}
-      <div className={`${sidebarCollapsed ? 'grid-cols-1' : 'grid-cols-panel'} grid min-h-screen w-full bg-slate-50 text-slate-900 transition-colors duration-300 ease-out dark:bg-slate-950 dark:text-slate-100`}>
+      <div className={`${sidebarCollapsed ? 'grid-cols-1' : 'grid-cols-panel'} grid min-h-screen w-full theme-bg-primary theme-text-primary transition-theme`}>
         {/* Navigation Sidebar */}
         {!sidebarCollapsed && (
           isDesktop ? (
-            <Sidebar onCreateSession={handleCreateSession} onToggleCollapse={() => setSidebarCollapsed(true)} onNavigate={(key) => setLeftTab(key)} />
+            <Sidebar
+              onCreateSession={handleCreateSession}
+              onToggleCollapse={() => setSidebarCollapsed(true)}
+              onNavigate={(key) => {
+                if (key === 'settings') { setShowSettingsModal(true); return; }
+                if (key === 'about') { setShowAboutModal(true); return; }
+                setLeftTab(key as LeftTabKey);
+              }}
+            />
           ) : (
             showMobileSidebar && (
               <div className="fixed inset-0 z-50 flex lg:hidden">
-                <div className="h-full w-80 max-w-[80%] overflow-y-auto border-r border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-slate-950">
-                  <Sidebar onCreateSession={handleCreateSession} onToggleCollapse={() => setShowMobileSidebar(false)} onNavigate={(key) => { setLeftTab(key); setShowMobileSidebar(false); }} />
+                <div className="h-full w-80 max-w-[80%] overflow-y-auto border-r theme-border theme-bg-primary transition-theme">
+                  <Sidebar
+                    onCreateSession={handleCreateSession}
+                    onToggleCollapse={() => setShowMobileSidebar(false)}
+                    onNavigate={(key) => {
+                      if (key === 'settings') { setShowSettingsModal(true); setShowMobileSidebar(false); return; }
+                      if (key === 'about') { setShowAboutModal(true); setShowMobileSidebar(false); return; }
+                      setLeftTab(key as LeftTabKey);
+                      setShowMobileSidebar(false);
+                    }}
+                  />
                 </div>
                 <button className="flex-1 bg-black/40" aria-label="Close sidebar overlay" onClick={() => setShowMobileSidebar(false)} />
               </div>
@@ -815,7 +840,7 @@ export default function App() {
         {/* Main Content Area */}
         <main 
           id="main-content"
-          className="flex min-w-0 flex-col gap-6 overflow-y-auto bg-white p-6 transition-colors duration-300 dark:bg-slate-950"
+          className="flex min-w-0 flex-col gap-6 overflow-y-auto theme-bg-primary-soft p-6 transition-theme"
           role="main"
           aria-label={t("app.labels.mainContent", { defaultValue: "Main content area" })}
         >
@@ -824,7 +849,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setSidebarCollapsed(false)}
-                className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300"
+                className="rounded-full border theme-border bg-[color:var(--color-background-secondary)] px-3 py-1 text-xs theme-text-secondary transition-colors hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 title="Show sidebar"
               >
                 Show sidebar
@@ -837,7 +862,7 @@ export default function App() {
               <div
                 role="tablist"
                 aria-label="Left panel tabs"
-                className="rounded-3xl border border-slate-200 bg-white p-2 text-sm dark:border-white/10 dark:bg-slate-900/60"
+                className="card-panel--strong p-2 text-sm transition-theme"
                 data-tour="tabs"
               >
                 <div className="flex flex-wrap items-center gap-1 sm:gap-2">
@@ -849,11 +874,11 @@ export default function App() {
                         role="tab"
                         aria-selected={active}
                         onClick={() => setLeftTab(tab.key)}
-                        className={`${
+                        className={`rounded-full border px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                           active
-                            ? "bg-sky-500 text-white"
-                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300"
-                        } rounded-full border px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500`}
+                            ? "theme-bg-accent theme-text-on-accent shadow-sm"
+                            : "theme-text-secondary theme-bg-secondary border theme-border hover:opacity-95"
+                        }`}
                       >
                         {tab.label}
                       </button>
@@ -881,7 +906,6 @@ export default function App() {
                             const instruction = match[2].trim();
                             const persona = remotePersonas[roles.length % remotePersonas.length] || personas[0];
                             roles.push({
-                              id: crypto.randomUUID(),
                               roleId,
                               personaId: persona?.id || 'v_researcher',
                               instruction,
@@ -986,7 +1010,8 @@ export default function App() {
                       
                       streamHandles.current[sessionId] = cleanup;
                     }}
-                    disabled={!backendReady}
+                    disabled={!backendReady || isAgencyStreaming}
+                    isSubmitting={isAgencyStreaming}
                   />
                 ) : (
                   <RequestComposer key={activeSessionId || 'compose'} onSubmit={handleSubmit} />
@@ -1005,17 +1030,17 @@ export default function App() {
               <SessionInspector />
               <div className="border-t border-slate-200 dark:border-white/10 md:hidden" />
               <div className="grid gap-4 sm:grid-cols-2 md:block md:space-y-6">
-                <section className="rounded-3xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-lg shadow-slate-900/5 dark:border-white/[0.15] dark:bg-slate-900/60 dark:shadow-black/30">
+                <section className="card-panel--strong p-4 sm:p-5 transition-theme">
                   <header className="mb-2">
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Stream status</p>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Live telemetry</h3>
+                    <p className="text-xs uppercase tracking-[0.3em] theme-text-muted">Stream status</p>
+                    <h3 className="text-sm font-semibold theme-text-primary">Live telemetry</h3>
                   </header>
                   <TelemetryView />
                 </section>
-                <section className="rounded-3xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-lg shadow-slate-900/5 dark:border-white/[0.15] dark:bg-slate-900/60 dark:shadow-black/30">
+                <section className="card-panel--strong p-4 sm:p-5 transition-theme">
                   <header className="mb-2">
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Analytics</p>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Usage insights</h3>
+                    <p className="text-xs uppercase tracking-[0.3em] theme-text-muted">Analytics</p>
+                    <h3 className="text-sm font-semibold theme-text-primary">Usage insights</h3>
                   </header>
                   <AnalyticsView selectedModel={selectedModel} onChangeModel={setSelectedModel} modelOptions={modelOptions} modelData={modelData} />
                 </section>
@@ -1025,12 +1050,12 @@ export default function App() {
         </main>
       </div>
       {/* Footer with tagline */}
-      <footer className="border-t border-slate-200 bg-white px-6 py-4 text-xs text-slate-500 dark:border-white/10 dark:bg-slate-950 dark:text-slate-400">
+      <footer className="border-t theme-border theme-bg-primary px-6 py-4 text-xs theme-text-muted transition-theme">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <span className="uppercase tracking-[0.25em]">AgentOS — Cognitive Operating System</span>
           <div className="flex items-center gap-3">
-            <a href="https://agentos.sh" target="_blank" rel="noreferrer" className="hover:text-sky-600">agentos.sh</a>
-            <a href="https://github.com/framersai/agentos" target="_blank" rel="noreferrer" className="hover:text-sky-600">GitHub</a>
+            <a href="https://agentos.sh" target="_blank" rel="noreferrer" className="transition-colors hover:text-[color:var(--color-accent-primary)]">agentos.sh</a>
+            <a href="https://github.com/framersai/agentos" target="_blank" rel="noreferrer" className="transition-colors hover:text-[color:var(--color-accent-primary)]">GitHub</a>
           </div>
         </div>
       </footer>

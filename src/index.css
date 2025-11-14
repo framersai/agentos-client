@@ -219,8 +219,85 @@ a:hover {
   .theme-border {
     border-color: var(--color-border-primary);
   }
+
+  .theme-bg-accent {
+    background-color: var(--color-accent-primary);
+    color: var(--text-on-primary, #ffffff);
+  }
+
+  .theme-text-on-accent {
+    color: var(--text-on-primary, #ffffff);
+  }
+
+  .theme-bg-primary-soft {
+    background-color: color-mix(in oklab, var(--color-background-primary) 92%, transparent);
+  }
+
+  .theme-bg-secondary-soft {
+    background-color: color-mix(in oklab, var(--color-background-secondary) 92%, transparent);
+  }
+
+  .theme-bg-surface {
+    background-color: color-mix(in oklab, var(--color-background-secondary) 90%, transparent);
+  }
+
+  .theme-border-strong {
+    border-color: color-mix(in oklab, var(--color-border-primary) 135%, black);
+  }
+
+  .theme-border-muted {
+    border-color: color-mix(in oklab, var(--color-text-muted) 25%, transparent);
+  }
+
+  .theme-bg-success {
+    background-color: var(--success);
+    color: var(--text-on-primary, #ffffff);
+  }
+
+  .theme-bg-warning {
+    background-color: var(--warning);
+    color: var(--text-on-primary, #111827);
+  }
+
+  .theme-bg-error {
+    background-color: var(--error);
+    color: var(--text-on-primary, #ffffff);
+  }
 }
 
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* Theme transitions and skeletons */
+.transition-theme {
+  transition: background-color var(--duration-smooth) var(--ease-out-quad),
+              color var(--duration-smooth) var(--ease-out-quad),
+              border-color var(--duration-smooth) var(--ease-out-quad),
+              box-shadow var(--duration-smooth) var(--ease-out-quad);
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--color-text-muted) 8%, transparent);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--color-text-muted) 16%, transparent) 45%,
+    color-mix(in oklab, var(--color-text-muted) 12%, transparent) 55%,
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
 /* Appearance variants applied on <html> */
 .appearance-compact .card-panel,
 .appearance-compact .card-panel--strong {

@@ -1,6 +1,0 @@
-dist/
-tsconfig.build.tsbuildinfo
-**/*.js
-**/*.js.map
-**/*.d.ts.map
-

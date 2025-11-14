@@ -29,7 +29,7 @@ import type { IAuthService, ISubscriptionService, ISubscriptionTier } from "@fra
 import { PrismaClient } from "@prisma/client";
 import { createDatabase, type StorageAdapter } from "@framers/sql-storage-adapter";
 
-const DEFAULT_PERSONA_ID = "voice_assistant_persona";
+const DEFAULT_PERSONA_ID = "v_researcher";
 const DEFAULT_USER_ID = agentOSConfig.defaultUserId ?? "agentos-client-user";
 
 class LocalAuthService implements IAuthService {

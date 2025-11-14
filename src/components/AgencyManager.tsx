@@ -1,10 +1,11 @@
 import { FormEvent, useMemo, useState, useEffect } from "react";
-import { Circle, Plus, Trash2, Users, RefreshCcw, Sparkles } from "lucide-react";
+import { Circle, Plus, Trash2, Users, RefreshCcw, Sparkles, History } from "lucide-react";
 import { useSessionStore } from "@/state/sessionStore";
 import type { AgentOSAgencyUpdateChunk } from "@/types/agentos";
 import { useWorkflowDefinitions } from "@/hooks/useWorkflowDefinitions";
 import type { WorkflowDefinition } from "@/types/workflow";
 import { AgencyWizard } from "./AgencyWizard";
+import { AgencyHistoryView } from "./AgencyHistoryView";
 
 function slugify(value: string) {
   return value
@@ -28,7 +29,10 @@ export function AgencyManager() {
   const addAgency = useSessionStore((state) => state.addAgency);
   const removeAgency = useSessionStore((state) => state.removeAgency);
   const setActiveAgency = useSessionStore((state) => state.setActiveAgency);
+  // Use a mock user ID for now - in production, get from auth context
+  const currentUserId = 'workbench-user';
   const [showWizard, setShowWizard] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Generate unique default agency name
   const generateDefaultName = () => {
@@ -167,6 +171,14 @@ export function AgencyManager() {
           <div className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
             {agencies.length} agencies
           </div>
+          <button
+            type="button"
+            onClick={() => setShowHistory(!showHistory)}
+            className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-slate-900"
+          >
+            <History className="h-3.5 w-3.5 text-purple-500" />
+            History
+          </button>
           <button
             type="button"
             onClick={() => setShowWizard(true)}
@@ -367,6 +379,14 @@ export function AgencyManager() {
         </form>
       </div>
       </section>
+
+      {/* Agency History Panel */}
+      {showHistory && (
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-900/60">
+          <AgencyHistoryView userId={currentUserId} />
+        </section>
+      )}
+
       <AgencyWizard open={showWizard} onClose={() => setShowWizard(false)} />
     </>
   );

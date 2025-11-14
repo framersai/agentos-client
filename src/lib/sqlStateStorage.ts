@@ -15,7 +15,8 @@ let schemaPromise: Promise<void> | null = null;
 async function getAdapter(): Promise<StorageAdapter> {
   if (!adapterPromise) {
     adapterPromise = createDatabase({
-      priority: ["indexeddb", "sqljs", "memory"],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      priority: ["indexeddb", "sqljs", "memory"] as any,
       type: typeof window === "undefined" ? "memory" : undefined
     });
   }

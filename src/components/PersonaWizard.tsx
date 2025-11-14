@@ -35,7 +35,7 @@ export function PersonaWizard({ open, onClose }: PersonaWizardProps) {
   // Generate unique default name
   const generateDefaultName = () => {
     const base = 'New Persona';
-    const existing = personas.filter(p => p.displayName.startsWith(base));
+    const existing = personas.filter((p) => (p.displayName ?? '').startsWith(base));
     return existing.length === 0 ? base : `${base} ${existing.length + 1}`;
   };
   
